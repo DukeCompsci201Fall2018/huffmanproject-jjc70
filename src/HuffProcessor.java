@@ -1,3 +1,4 @@
+import java.util.PriorityQueue;
 
 /**
  * Although this class has a history of several years,
@@ -54,22 +55,6 @@ public class HuffProcessor {
 		out.close();
 	}
 
-	private void writeCompressedBits(String[] codings, BitInputStream in, BitOutputStream out) {
-
-	}
-
-	private HuffNode makeTreeFromCounts(int counts) {
-		return null;
-	}
-
-	private String[] makeCodingsFromTree(HuffNode root) {
-		return null;
-	}
-
-	private void writeHeader(HuffNode root, BitOutputStream out) {
-
-	}
-
 	private int[] readForCounts(BitInputStream in) {
 		int[] freq = new int[ALPH_SIZE + 1];
 		while(in.readBits(BITS_PER_WORD) != PSEUDO_EOF) {
@@ -77,6 +62,38 @@ public class HuffProcessor {
 		}
 		freq[PSEUDO_EOF] = 1;
 		return freq;
+	}
+
+	private HuffNode makeTreeFromCounts(int[] counts) {
+		PriorityQueue<HuffNode> pq = new PriorityQueue<>();
+
+		for (int index : counts) {
+			if (index > 0) {
+				pq.add(new HuffNode(index, counts[index], null, null));
+			}
+		}
+
+		while (pq.size() > 1) {
+			HuffNode left = pq.remove();
+			HuffNode right = pq.remove();
+			HuffNode t = new HuffNode(0, left.myWeight + right.myWeight, left, right);
+			pq.add(t);
+		}
+		HuffNode root = pq.remove();
+		return root;
+	}
+
+	private String[] makeCodingsFromTree(HuffNode root) {
+		return null;
+	}
+	
+	private void writeCompressedBits(String[] codings, BitInputStream in, BitOutputStream out) {
+
+	}
+
+
+	private void writeHeader(HuffNode root, BitOutputStream out) {
+
 	}
 
 	/**
