@@ -60,7 +60,7 @@ public class HuffProcessor {
 
 		while(true) {
 			int val = in.readBits(BITS_PER_WORD);
-			if (val == -1) break;
+			if (val == PSEUDO_EOF) break;
 			freq[val]++;
 		}
 
@@ -119,7 +119,7 @@ public class HuffProcessor {
 		String code = "";
 		while(true) {
 			int index = in.readBits(BITS_PER_WORD);
-			if (index == -1) break;
+			if (index == PSEUDO_EOF) break;
 			code = encodings[index];
 			out.writeBits(code.length(), Integer.parseInt(code, 2));
 		}
