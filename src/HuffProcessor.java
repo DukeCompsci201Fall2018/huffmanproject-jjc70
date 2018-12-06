@@ -43,8 +43,8 @@ public class HuffProcessor {
 	 */
 	public void compress(BitInputStream in, BitOutputStream out){
 
-		int[] counts = readForCounts(in);
-		HuffNode root = makeTreeFromCounts(counts);
+		int[] freq = readForCounts(in);
+		HuffNode root = makeTreeFromCounts(freq);
 		String[] encodings = makeCodingsFromTree(root);
 
 		out.writeBits(BITS_PER_INT, HUFF_TREE);
@@ -60,7 +60,7 @@ public class HuffProcessor {
 
 		while(true) {
 			int val = in.readBits(BITS_PER_WORD);
-			if (val == PSEUDO_EOF) break;
+			if (val == -1) break;
 			freq[val]++;
 		}
 
@@ -68,12 +68,12 @@ public class HuffProcessor {
 		return freq;
 	}
 
-	private HuffNode makeTreeFromCounts(int[] counts) {
+	private HuffNode makeTreeFromCounts(int[] freq) {
 		PriorityQueue<HuffNode> pq = new PriorityQueue<>();
 
-		for (int index = 0; index < counts.length; index++) {
-			if (counts[index] > 0) {
-				pq.add(new HuffNode(index, counts[index], null, null));
+		for (int index = 0; index < freq.length; index++) {
+			if (freq[index] > 0) {
+				pq.add(new HuffNode(index, freq[index], null, null));
 			}
 		}
 
@@ -104,7 +104,7 @@ public class HuffProcessor {
 	}
 
 	private void writeHeader(HuffNode root, BitOutputStream out) {
-		if (root.myValue == 0) {
+		if (root.myLeft != null && root.myRight != null) {
 			out.writeBits(1, 0);
 			writeHeader(root.myLeft, out);
 			writeHeader(root.myRight, out);
@@ -119,7 +119,7 @@ public class HuffProcessor {
 		String code = "";
 		while(true) {
 			int index = in.readBits(BITS_PER_WORD);
-			if (index == PSEUDO_EOF) break;
+			if (index == -1) break;
 			code = encodings[index];
 			out.writeBits(code.length(), Integer.parseInt(code, 2));
 		}
